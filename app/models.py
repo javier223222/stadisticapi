@@ -7,26 +7,20 @@ from sqlalchemy.orm import relationship, mapper
 from app.database import Base, engine
 metadata = MetaData()
 
-user = Table('user', metadata, autoload_with=engine)
-producto = Table('producto', metadata, autoload_with=engine)
-specif_product = Table('specifproduct', metadata, autoload_with=engine)
-productos_of_user = Table('productosofuser', metadata, autoload_with=engine)
-role = Table('role', metadata, autoload_with=engine)
+user = Table('User', metadata, autoload_with=engine)
+producto = Table('Producto', metadata, autoload_with=engine)
+specif_product = Table('specifProduct', metadata, autoload_with=engine)
+productos_of_user = Table('productosOfUser', metadata, autoload_with=engine)
+role = Table('Role', metadata, autoload_with=engine)
 sensor = Table('sensor', metadata, autoload_with=engine)
-sensor_data = Table('sensordata', metadata, autoload_with=engine)
+sensor_data = Table('sensorData', metadata, autoload_with=engine)
+anomaly = Table('anomaly', metadata, autoload_with=engine)
 
 
 class User(Base):
     __table__ = user
 
-    # Define relaciones aquí si es necesario
-    def serialize(self):
-        return {
-            'id': self.id,
-            'codeOfProduct': self.codeOfProduct,
-            'value': self.value,
-            'timestamp': self.timestamp
-        }
+    
 
 class Producto(Base):
     __table__ = producto
@@ -71,4 +65,6 @@ class SensorData(Base):
 
         }
 
+class Anomaly(Base):
+    __table__ = anomaly
     # Define relaciones aquí si es necesario
