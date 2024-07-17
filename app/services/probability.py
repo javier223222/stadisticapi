@@ -31,26 +31,42 @@ class DataProbability:
         forecast['ds'] = forecast['ds'].dt.strftime('%Y-%m-%d %H:%M:%S')
         forecast = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].to_dict(orient='records')
         return forecast
-    def calculate_sensor_probability(datareceive,threshold):
-        my_variable = os.getenv('VARIABLE')
-        print(my_variable)
-        data=[dp["valor"] for dp in datareceive]
-        print(data)
-        data=np.array(data)
-        mean=np.mean(data)
-        std_dev=np.std(data)
-        probability=norm.cdf(threshold,mean,std_dev)
-        
-        print(mean)
-        return {
-            "mean":round(mean,3),
-            "std_dev":std_dev,
-            "threshold":round(threshold,3),
-            "nameSensor":datareceive[0]["nameSensor"],
-            "probability":round(probability,3),
-            "porcentaje":round(probability*100,2)
-        }
-        
+    def calculate_sensor_probability(datareceive,threshold=None):
+           my_variable = os.getenv('VARIABLE')
+           print(my_variable)
+           data = [dp["valor"] for dp in datareceive]
+           
+           data = np.array(data)
+
+           mean = np.mean(data)
+           std_dev = np.std(data)
+    
+    # Establecer umbrales si no se proporcionan
+           if threshold is None:
+             lower_threshold = mean - 3 * std_dev
+             upper_threshold = mean + 3 * std_dev
+           else:
+            lower_threshold = upper_threshold = threshold
+           prob_below_lower = norm.cdf(lower_threshold, mean, std_dev)
+           prob_above_upper = 1 - norm.cdf(upper_threshold, mean, std_dev)
+           prob_out_of_range = prob_below_lower + prob_above_upper
+           prob_within_range = 1 - prob_out_of_range
+           is_failing = any((data < lower_threshold) | (data > upper_threshold))
+
+            
+           return {
+            "mean": round(mean, 3),
+            "std_dev": round(std_dev, 3),
+            "lower_threshold": round(lower_threshold, 3),
+            "upper_threshold": round(upper_threshold, 3),
+            "nameSensor": datareceive[0]["nameSensor"],
+            "probability_out_of_range": round(prob_out_of_range, 3),
+            "probability_within_range": round(prob_within_range, 3),
+            "porcentaje_out_of_range": round(prob_out_of_range * 100, 2),
+            "porcentaje_within_range": round(prob_within_range * 100, 2),
+            "is_failing": is_failing
+           }
+       
     def predict_fault(data):
         df=pd.DataFrame([{
             "ds":pd.to_datetime(dp["createdAt"]).tz_localize(None),

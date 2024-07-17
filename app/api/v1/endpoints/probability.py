@@ -23,7 +23,7 @@ async def probabilitysensor(request: Request):
  try:
     data = await request.json()
     datarecive = data.get("sensor_data", [])
-    threshold = data.get("threshold", 0)
+    threshold = data.get("threshold")
     print(threshold)
     results = DataProbability.calculate_sensor_probability(datarecive, threshold)
     resultjson=json.dumps(results)
