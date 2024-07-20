@@ -24,7 +24,7 @@ async def async_callback(session, data):
         if data["anomalie"] is True:
             await sio.emit("anomalies",json.dumps({"message":"anomalia detectada en el panel solar con el el sensor de "+str(data["nameSensor"]),"nameSensor":data["nameSensor"],"codeOfProduct":data["codeOfProduct"],"sensorData":data}),room=data["codeOfProduct"])
         if data["sensorId"] == 1:
-            results = get_sensor_data_by_product_code(session, data["codeOfProduct"], 1)
+            results = get_sensor_data_by_product_code(session, data["codeOfProduct"], 2)
             serialized_results = [result.serialize() for result in results]
             
             frequencies, values = DataProcessingService.process_sensor_data(serialized_results)
