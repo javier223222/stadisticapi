@@ -32,29 +32,35 @@ class DataProbability:
         forecast = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].to_dict(orient='records')
         return forecast
     def calculate_sensor_probability(datareceive,threshold=None):
-           my_variable = os.getenv('VARIABLE')
-           print(my_variable)
-           data = [dp["valor"] for dp in datareceive]
-           
-           data = np.array(data)
+            # Extraer los valores de los datos recibidos
+        data = [dp["valor"] for dp in datareceive]
+        data = np.array(data)
 
-           mean = np.mean(data)
-           std_dev = np.std(data)
-    
+    # Calcular la media y la desviación estándar de los datos
+        mean = np.mean(data)
+        std_dev = np.std(data)
+
     # Establecer umbrales si no se proporcionan
-           if threshold is None:
-             lower_threshold = mean - 3 * std_dev
-             upper_threshold = mean + 3 * std_dev
-           else:
+        if threshold is None:
+            lower_threshold = mean - 3 * std_dev
+            upper_threshold = mean + 3 * std_dev
+        else:
             lower_threshold = upper_threshold = threshold
-           prob_below_lower = norm.cdf(lower_threshold, mean, std_dev)
-           prob_above_upper = 1 - norm.cdf(upper_threshold, mean, std_dev)
-           prob_out_of_range = prob_below_lower + prob_above_upper
-           prob_within_range = 1 - prob_out_of_range
-           is_failing = any((data < lower_threshold) | (data > upper_threshold))
+    
+    # Calcular la probabilidad de estar por debajo del umbral
+        prob_below_threshold = norm.cdf(threshold, mean, std_dev)
 
-            
-           return {
+    # Calcular la probabilidad de estar fuera del rango
+        prob_below_lower = norm.cdf(lower_threshold, mean, std_dev)
+        prob_above_upper = 1 - norm.cdf(upper_threshold, mean, std_dev)
+        prob_out_of_range = prob_below_lower + prob_above_upper
+        prob_within_range = 1 - prob_out_of_range
+
+    # Verificar si hay fallos en los datos
+        is_failing = any((data < lower_threshold) | (data > upper_threshold))
+
+    # Retornar el resultado en formato JSON
+        return {
             "mean": round(mean, 3),
             "std_dev": round(std_dev, 3),
             "lower_threshold": round(lower_threshold, 3),
@@ -64,8 +70,10 @@ class DataProbability:
             "probability_within_range": round(prob_within_range, 3),
             "porcentaje_out_of_range": round(prob_out_of_range * 100, 2),
             "porcentaje_within_range": round(prob_within_range * 100, 2),
-            "is_failing": is_failing
-           }
+            "is_failing": is_failing,
+            "probability_below_threshold": round(prob_below_threshold, 3),
+            "porcentaje_below_threshold": round(prob_below_threshold * 100, 2)
+             }
        
     def predict_fault(data):
         df=pd.DataFrame([{
